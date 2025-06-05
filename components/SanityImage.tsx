@@ -1,7 +1,9 @@
+// components/SanityImage.tsx
+
 import type { SanityImageSource } from '@sanity/image-url/lib/types/types'
 import { getSanityImageConfig } from 'lib/sanity.client'
+import imageUrlBuilder from '@sanity/image-url'
 import Image from 'next/image'
-import { useNextSanityImage } from 'next-sanity-image'
 
 interface Props {
   asset: SanityImageSource
@@ -11,15 +13,25 @@ interface Props {
 
 export const SanityImage = (props: Props) => {
   const { asset, alt, caption } = props
-  const imageProps = useNextSanityImage(getSanityImageConfig(), asset)
 
-  if (!imageProps) return null
+  // Build a URL builder from your Sanity client config:
+  const builder = imageUrlBuilder(getSanityImageConfig())
+
+  // Generate the final image URL:
+  const src = builder.image(asset).auto('format').fit('max').url()
+
+  // If there’s no asset, render nothing:
+  if (!asset || !src) {
+    return null
+  }
 
   return (
     <figure>
       <Image
-        {...imageProps}
+        src={src}
         alt={alt}
+        width={800}
+        height={600}
         sizes="(max-width: 800px) 100vw, 800px"
       />
       {caption && (
